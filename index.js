@@ -26,6 +26,16 @@ async function run(){
          const classCollection = client.db("onlinehashor").collection("newclass");
          const newclasscollection=client.db("newdb").collection("classes");
 
+          // get the stored classes from database 
+         app.get('/classes', async(req,res)=>{
+          const query={};
+          const cursor=classCollection.find(query);
+          const classes=await cursor.toArray();
+          res.send(classes);
+         })
+
+
+        // stored the new classes 
          app.post('/user', async(req,res) =>{
           const newUser=req.body;
           console.log("adding new user", newUser)
