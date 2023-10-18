@@ -35,6 +35,12 @@ async function run(){
          })
 
          //get the new added students from database
+         app.get('/students', async(req,res)=>{
+          const query={};
+          const cursor=newStudentCollection.find(query);
+          const student=await cursor.toArray();
+          res.send(student);
+         })
 
 
         // stored the new classes 
