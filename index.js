@@ -24,7 +24,7 @@ async function run(){
          // Connect to the database
          await client.connect();
          const classCollection = client.db("onlinehashor").collection("newclass");
-         const newclasscollection=client.db("newdb").collection("classes");
+         const newStudentCollection=client.db("newdb").collection("classes");
 
           // get the stored classes from database 
          app.get('/classes', async(req,res)=>{
@@ -33,6 +33,8 @@ async function run(){
           const classes=await cursor.toArray();
           res.send(classes);
          })
+
+         //get the new added students from database
 
 
         // stored the new classes 
@@ -43,6 +45,16 @@ async function run(){
           res.send(result); 
 
          })
+
+         //stored people in new classes database
+         app.post('/student', async(req,res)=>{
+          const newStudent=req.body;
+          console.log("new students added",newStudent);
+          const result1=await newStudentCollection.insertOne(newStudent);
+          res.send(result1);
+
+         })
+
            
 
     }
