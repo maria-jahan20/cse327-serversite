@@ -23,6 +23,17 @@ const client = new MongoClient(uri, {
       deprecationErrors: true,
     }
   });
+  const emailUser=process.env.emailUser;
+  const emailPassword=process.env.emailPassword;
+
+  const transporter =nodemailer.createTransport({
+    service: 'gmail',
+    auth:{
+      user: emailUser,
+      pass: emailPassword
+    }
+  });
+
 
 async function run(){
     try{
@@ -62,24 +73,16 @@ async function run(){
 
          //stored people in new classes database
          app.post('/student', async(req,res)=>{
-          const { recipent}=req.body;
+          const { recipient}=req.body;
 
 
           // owner email and password 
-          const emailUser=process.env.emailUser;
-          const emailPassword=process.env.emailPassword;
+          
 
-
-          const transporter =nodemailer.createTransport({
-            service: 'gmail',
-            auth:{
-              user: emailUser,
-              pass: emailPassword
-            }
-          });
+         
           const mailOption ={
             from: emailUser,
-            to: recipent,
+            to: recipient,
             subject: "Class invitation link",
             text: 'This is a test email'
           };
@@ -95,7 +98,7 @@ async function run(){
           })
 
           //storing in database
-          const result1 = await newStudentCollection.insertOne({ email: recipent });
+          const result1 = await newStudentCollection.insertOne({ email: recipient });
           res.json({ success: true, message: 'Invitation sent successfully', result: result1 });
 
 
