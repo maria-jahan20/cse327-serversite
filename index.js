@@ -59,21 +59,25 @@ async function run(){
 
         //  get classes from database 
         app.get('/classes/:id', async(req,res)=>{
+          try {
           const id = req.params.id;
+          
+          const objectId={_id:new ObjectId(id)};
+         
+          const cursor=await classCollection.findOne(objectId);
+          if (cursor) {
+            res.send(cursor);
+            console.log(cursor);
+          } else {
+            res.status(404).json({ error: 'Class not found' });
+          }
+        } catch (error) {
+          console.error("Error fetching data:", error);
+          res.status(500).json({ error: 'Internal server error' });
+        }
 
-       if (/^[0-9a-fA-F]{24}$/.test(id)) {
-  // It's a valid ObjectId
-  const objectId = new ObjectId(id);
-  console.log(objectId)
-   // const query={_id:ObjectId(id)}
-          let perClass =await classCollection.findOne(objectId);
-          console.log(perClass);
+     
 
-  // Do something with objectId
-} else {
-  // It's not a valid ObjectId
-  console.error('Invalid ObjectId format');
-}
 
          
          
