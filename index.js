@@ -7,6 +7,7 @@ const { ObjectId } = require('mongodb');
 
 
 
+
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -14,7 +15,7 @@ const port = process.env.PORT || 5000;
 // middle ware 
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json())
+// app.use(bodyParser.json())
 
 
 const uri = `mongodb+srv://${process.env.db_user}:${process.env.db_password}@cluster0.w68aaz5.mongodb.net/?retryWrites=true&w=majority`;
@@ -36,6 +37,7 @@ const client = new MongoClient(uri, {
       pass: emailPassword
     }
   });
+  // Create a schema for your MCQ questions
 
 
 async function run(){
@@ -46,6 +48,7 @@ async function run(){
          await client.connect();
          const classCollection = client.db("onlinehashor").collection("newclass");
          const newStudentCollection=client.db("newdb").collection("classes");
+         const questionCollection=client.db("quizzes").collection('questions');
 
 
 
@@ -225,7 +228,31 @@ app.get('/student', async (req, res) => {
             res.status(500).json({ success: false, message: 'An error occurred. Please try again later.' });
           }
         });
+
+
+        // posting question in mongodb 
         
+        app.post("/questions", async (req, res) => {
+          const newQuestion = req.body;
+          console.log(newQuestion);
+        
+          try {
+            // const data =[{
+            //   question,
+            //   options,
+            //   correctOption
+            // }];
+            // console.log(data);
+        
+            // Save the question to the database
+           const result= await questionCollection.insertMany(newQuestion)
+        
+            res.status(201).json({ message: "Question posted successfully" });
+          } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Error posting question" });
+          }
+        });
 
         //  delete students from class 
         app.delete('/students/:id', async (req, res) => {
