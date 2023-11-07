@@ -123,6 +123,31 @@ app.get('/student', async (req, res) => {
             res.status(500).json({ error: 'Internal server error' });
           }
         });
+
+        app.get('/classes/:id/:formid/question', async (req, res) => {
+          try {
+            const classId = req.params.id;
+            const formId = req.params.formid; // Retrieve formId from the URL
+        
+            // Construct the query to find questions based on both classId and formId
+            const query = await questionCollection.find({
+              classId: new ObjectId(classId),
+              formId: formId,
+            }).toArray();
+        
+            if (query) {
+              res.send(query);
+              console.log(query);
+            } else {
+              res.status(404).json({ error: 'Form not found for the given class' });
+            }
+          } catch (error) {
+            console.error("Error fetching data:", error);
+            res.status(500).json({ error: 'Internal server error' });
+          }
+        });
+        
+        
       
         
         
@@ -140,45 +165,7 @@ app.get('/student', async (req, res) => {
           res.send(result); 
 
          })
-        // app.post('/user',async(req,res)=>{
-        //   const newUser=req.body;
-        //   const id=req.params.id;
-        //   newUser.id=id;
-
-        // })
-
-        //  //stored people in new classes database
-        //  app.post('/student', async(req,res)=>{
-          
-        //   const {recipient}=req.body;
-
-        //   // const { recipient}=req.body;
-
-
-          
-
-        // //  to send the email 
-        //   const mailOption ={
-        //     from: emailUser,
-        //     to: recipient,
-        //     subject: "Class invitation link",
-        //     text: 'This is a test email'
-        //   };
-        //   transporter.sendMail(mailOption,(error,info)=>{
-        //     if(error){
-        //       console.log(error);
-        //       res.status(500).json({ success: false, message: 'Failed to send invitation' });
-        //     }
-        //     else {
-        //       console.log('Email sent: ' + info.response);
-        //       res.json({ success: true, message: 'Invitation sent successfully' });
-        //     }
-        //   })
-
-        //   //storing in database
-        //   const result1 = await newStudentCollection.insertOne({ email: recipient });
-        //   res.json({ success: true, message: 'Invitation sent successfully', result: result1 });
-
+      
 
          
 
@@ -186,6 +173,7 @@ app.get('/student', async (req, res) => {
         app.post('/classes/:id/student', async (req, res) => {
           try {
             const {id}=req.params;
+            console.log(id);
             const classId=new ObjectId(id)
             
             const { recipient} = req.body;
@@ -232,27 +220,32 @@ app.get('/student', async (req, res) => {
 
         // posting question in mongodb 
         
-        app.post("/questions", async (req, res) => {
-          const newQuestion = req.body;
-          console.log(newQuestion);
+        app.post("/classes/:id/design", async (req, res) => {
+          const { id } = req.params;
+          const classId = new ObjectId(id);
+          console.log(id);
+          const { questions,formId } = req.body; // Access the questions array from the request body
         
           try {
-            // const data =[{
-            //   question,
-            //   options,
-            //   correctOption
-            // }];
-            // console.log(data);
+            const questionsToInsert = questions.map((question) => ({
+              formId:formId,
+              question: question.question,
+              options: question.options,
+              correctOption: question.correctOption,
+              classId: classId,
+            }));
         
-            // Save the question to the database
-           const result= await questionCollection.insertMany(newQuestion)
+            // Assuming you are using a MongoDB collection named questionCollection
+            const result = await questionCollection.insertMany(questionsToInsert);
         
-            res.status(201).json({ message: "Question posted successfully" });
+            res.status(201).json({ message: "Questions posted successfully" });
           } catch (error) {
             console.error(error);
-            res.status(500).json({ message: "Error posting question" });
+            res.status(500).json({ message: "Error posting questions" });
           }
         });
+        
+        
 
         //  delete students from class 
         app.delete('/students/:id', async (req, res) => {
