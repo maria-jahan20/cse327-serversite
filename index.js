@@ -124,28 +124,57 @@ app.get('/student', async (req, res) => {
           }
         });
 
-        app.get('/classes/:id/:formid/question', async (req, res) => {
+
+         // posting question in mongodb 
+        
+         app.post("/classes/:id/design", async (req, res) => {
+          const { id } = req.params;
+          const classId = new ObjectId(id);
+          // console.log(id);
+          const { questions,formId } = req.body; // Access the questions array from the request body
+        
+          try {
+            const questionsToInsert = questions.map((question) => ({
+              formId:formId,
+              question: question.question,
+              options: question.options,
+              correctOption: question.correctOption,
+              classId: classId,
+            }));
+        
+            // Assuming you are using a MongoDB collection named questionCollection
+            const result = await questionCollection.insertMany(questionsToInsert);
+        
+            res.status(201).json({ message: "Questions posted successfully" });
+          } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "Error posting questions" });
+          }
+        });
+
+        app.get('/classes/:id/:formId/question', async (req, res) => {
           try {
             const classId = req.params.id;
-            const formId = req.params.formid; // Retrieve formId from the URL
+            const formId = req.params.formId; // Retrieve formId from the URL
         
-            // Construct the query to find questions based on both classId and formId
+            // Assuming questionCollection is your MongoDB collection
             const query = await questionCollection.find({
               classId: new ObjectId(classId),
               formId: formId,
             }).toArray();
         
-            if (query) {
-              res.send(query);
+            if (query.length > 0) {
+              res.json(query);
               console.log(query);
             } else {
-              res.status(404).json({ error: 'Form not found for the given class' });
+              res.status(404).json({ error: 'Form not found for the given class and formId' });
             }
           } catch (error) {
             console.error("Error fetching data:", error);
             res.status(500).json({ error: 'Internal server error' });
           }
         });
+        
         
         
       
@@ -195,7 +224,7 @@ app.get('/student', async (req, res) => {
               from: emailUser,
               to: recipient,
               subject: "Class invitation link",
-              text: 'This is a test email'
+              text:`http://localhost:3000/classes/${id}`
             };
         
             transporter.sendMail(mailOptions, async (error, info) => {
@@ -218,32 +247,7 @@ app.get('/student', async (req, res) => {
         });
 
 
-        // posting question in mongodb 
-        
-        app.post("/classes/:id/design", async (req, res) => {
-          const { id } = req.params;
-          const classId = new ObjectId(id);
-          console.log(id);
-          const { questions,formId } = req.body; // Access the questions array from the request body
-        
-          try {
-            const questionsToInsert = questions.map((question) => ({
-              formId:formId,
-              question: question.question,
-              options: question.options,
-              correctOption: question.correctOption,
-              classId: classId,
-            }));
-        
-            // Assuming you are using a MongoDB collection named questionCollection
-            const result = await questionCollection.insertMany(questionsToInsert);
-        
-            res.status(201).json({ message: "Questions posted successfully" });
-          } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: "Error posting questions" });
-          }
-        });
+       
         
         
 
