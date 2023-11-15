@@ -53,12 +53,25 @@ async function run(){
 
 
           // get the stored classes from database 
-         app.get('/classes', async(req,res)=>{
-          const query={};
-          const cursor=classCollection.find(query);
-          const classes=await cursor.toArray();
-          res.send(classes);
-         })
+       // get the stored classes from the database
+app.get('/classes', async (req, res) => {
+  try {
+    const userEmail = req.query.email; // Get the user's email from the query parameter
+
+    if (!userEmail) {
+      return res.status(400).json({ error: 'User email is required.' });
+    }
+
+    const query = { email: userEmail }; // Modify the query to filter classes by user email
+    const cursor = classCollection.find(query);
+    const classes = await cursor.toArray();
+    res.json(classes);
+  } catch (error) {
+    console.error('Error fetching classes:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
         //  get classes from database 
         app.get('/classes/:id', async(req,res)=>{
@@ -88,6 +101,18 @@ async function run(){
 
          
         })
+        // app.get('/showclasses/:id', async (req, res) => {
+        //   const id = req.params.id;
+        //   const objectId = { _id: new ObjectId(id) };
+        //   const cursor = await classCollection.findOne(objectId);
+        //   if (cursor) {
+        //     res.send(cursor);
+        //     console.log(cursor);
+        //   } else {
+        //     res.status(404).json({ error: 'Class not found' });
+        //   }
+        // });
+        
 
      // get the student 
 app.get('/student', async (req, res) => {
@@ -152,12 +177,34 @@ app.get('/student', async (req, res) => {
           }
         });
 
+        // app.get('/classes/:id/:formId/question', async (req, res) => {
+        //   try {
+        //     const classId = req.params.id;
+        //     const formId = req.params.formId; // Retrieve formId from the URL
+        
+        //     // Assuming questionCollection is your MongoDB collection
+        //     const query = await questionCollection.find({
+        //       classId: new ObjectId(classId),
+        //       formId: formId,
+        //     }).toArray();
+        
+        //     if (query.length > 0) {
+        //       res.json(query);
+        //       console.log(query);
+        //     } else {
+        //       res.status(404).json({ error: 'Form not found for the given class and formId' });
+        //     }
+        //   } catch (error) {
+        //     console.error("Error fetching data:", error);
+        //     res.status(500).json({ error: 'Internal server error' });
+        //   }
+        // });
+
         app.get('/classes/:id/:formId/question', async (req, res) => {
           try {
             const classId = req.params.id;
-            const formId = req.params.formId; // Retrieve formId from the URL
+            const formId = req.params.formId;
         
-            // Assuming questionCollection is your MongoDB collection
             const query = await questionCollection.find({
               classId: new ObjectId(classId),
               formId: formId,
@@ -170,10 +217,11 @@ app.get('/student', async (req, res) => {
               res.status(404).json({ error: 'Form not found for the given class and formId' });
             }
           } catch (error) {
-            console.error("Error fetching data:", error);
+            console.error('Error fetching data:', error);
             res.status(500).json({ error: 'Internal server error' });
           }
         });
+        
         
         
         
