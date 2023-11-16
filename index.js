@@ -49,6 +49,7 @@ async function run(){
          const classCollection = client.db("onlinehashor").collection("newclass");
          const newStudentCollection=client.db("newdb").collection("classes");
          const questionCollection=client.db("quizzes").collection('questions');
+         const textCollection=client.db("textQuestion").collection("textexam");
 
 
 
@@ -293,6 +294,63 @@ app.get('/student', async (req, res) => {
             res.status(500).json({ success: false, message: 'An error occurred. Please try again later.' });
           }
         });
+
+        
+
+// Store questions and keywords
+
+
+app.post('/submitquestion/:id', async (req, res) => {
+  const { id } = req.params;
+  const classId = new ObjectId(id);
+  const { question, keywords } = req.body;
+  console.log(question, keywords);
+
+   // post text questions
+  const data = {
+    question: question,
+    keywords: keywords,
+    classId: classId,
+  };
+
+  // Store the question and keywords
+  // Assuming you have a MongoDB collection named textCollection
+  const result = await textCollection.insertOne(data);
+
+  res.status(200).json({ message: 'Question submitted successfully!' });
+});
+
+
+
+
+// get the text question and mark it if it will match with keywords 
+app.get('/getquestionsandscore/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const classId = new ObjectId(id);
+
+    // Assuming you have a MongoDB collection named textCollection
+    // Fetch the keywords for scoring from the database
+    const classKeywords = await textCollection.distinct('keywords', { classId: classId });
+
+    // Find questions for the specified class and calculate scores based on keywords
+    const questions = await textCollection.find({ classId: classId }).toArray();
+    const scoredQuestions = questions.map((question) => {
+      const score = question.keywords.filter((keyword) => classKeywords.includes(keyword)).length;
+      return { ...question, score };
+    });
+
+    res.status(200).json(scoredQuestions);
+  } catch (error) {
+    console.error('Error fetching questions and calculating scores', error);
+    res.status(500).json({ error: 'An error occurred while fetching questions and calculating scores.' });
+  }
+});
+
+
+
+
+
 
 
        
